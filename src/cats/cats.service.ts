@@ -14,22 +14,24 @@ export class CatsService {
 
     @InjectRepository(Breed)
     private readonly breedsRepository: Repository<Breed>,
-  ) { }
+  ) {}
 
   async create(createCatDto: CreateCatDto) {
-    const breed = await this.breedsRepository.findOneBy({ name: createCatDto.breed });
+    const breed = await this.breedsRepository.findOneBy({
+      name: createCatDto.breed,
+    });
 
     if (!breed) {
       throw new BadRequestException('Breed not found');
     }
 
-    return this.catsRepository.save({
-      ...createCatDto,
+    const cat = this.catsRepository.create({
+      name: createCatDto.name,
+      age: createCatDto.age,
       breed,
     });
-    // const cat = this.catsRepository.create(createCatDto);
-    // return this.catsRepository.save(cat);
-    // return 'This action adds a new cat';
+
+    return await this.catsRepository.save(cat);
   }
 
   async findAll() {
@@ -43,7 +45,28 @@ export class CatsService {
   }
 
   async update(id: number, updateCatDto: UpdateCatDto) {
-    return await this.catsRepository.update(id, updateCatDto);
+    const cat = await this.catsRepository.findOneBy({ id });
+
+    if (!cat) {
+      throw new BadRequestException('Cat not found');
+    }
+
+    let breed;
+    if (updateCatDto.breed) {
+      breed = await this.breedsRepository.findOneBy({
+        name: updateCatDto.breed,
+      });
+
+      if (!breed) {
+        throw new BadRequestException('Breed not found');
+      }
+    }
+
+    return await this.catsRepository.save({
+      ...cat,
+      ...updateCatDto,
+      breed,
+    });
     // return `This action updates a #${id} cat`;
   }
 
