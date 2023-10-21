@@ -42,7 +42,7 @@ export class AuthService {
       throw new UnauthorizedException('Password is wrong');
     }
 
-    const payload = { email: user.email };
+    const payload = { email: user.email, role: user.role };
 
     const token = await this.jwtService.signAsync(payload);
 
@@ -50,5 +50,15 @@ export class AuthService {
       token,
       email,
     };
+  }
+
+  async profile({ email, role }: { email: string; role: string }) {
+    // if (role !== 'admin') {
+    //   throw new UnauthorizedException(
+    //     'You are not authorized to access this resource',
+    //   );
+    // }
+
+    return await this.usersService.findOneByEmail(email);
   }
 }
